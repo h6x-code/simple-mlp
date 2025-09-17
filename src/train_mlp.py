@@ -15,6 +15,8 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from tqdm import tqdm
 
+PHASE = 2
+
 def set_seeds(seed=1337):
     random.seed(seed); np.random.seed(seed)
     torch.manual_seed(seed); torch.cuda.manual_seed_all(seed)
@@ -83,7 +85,7 @@ def main():
             opt.zero_grad(); loss=lossfn(m(x),y); loss.backward(); opt.step()
         acc=evaluate(m,teL,dev,mu,center=not a.no_center_eval)
         print(f"Epoch {e}: test acc {acc*100:.2f}%")
-    export_json(m,mu,Path("docs/models/mlp_p1.json"))
+    export_json(m,mu,Path(f"docs/models/mlp_p{PHASE}.json"))
 
 if __name__=="__main__":
     main()
