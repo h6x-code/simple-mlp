@@ -1,32 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Simple MLP Demo</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simple MLP — MNIST Draw & Predict</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<main class="grid">
-  <section class="left">
-    <h1>Simple MLP</h1>
-    <p>Draw a digit in the 280×280 pad. It downscales to 28×28 (foreground≈1).</p>
-    <canvas id="pad" width="280" height="280"></canvas>
-    <div class="controls">
-      <button id="predictBtn">Predict</button>
-      <button id="clearBtn">Clear</button>
-      <label>Brush <input id="brush" type="range" min="3" max="40" value="14"></label>
-      <label><input id="centerChk" type="checkbox" checked> Center if μ available</label>
-      <button id="downloadCsvBtn">Download 28×28 (.csv)</button>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>Simple MLP</h1>
+      <p class="subtitle">Draw a digit in the 280×280 pad. It downscales to 28×28 (foreground≈1).</p>
     </div>
-  </section>
-  <section class="right">
-    <div id="status">Loading model…</div>
-    <div>Prediction: <span id="predVal">—</span></div>
-    <canvas id="thumb" width="28" height="28"></canvas>
-    <details><summary>Scores (debug)</summary><pre id="scores"></pre></details>
-    <p>Shortcuts: Space = Predict, C = Clear</p>
-  </section>
-</main>
-<script src="app.js" defer></script>
+  </header>
+
+  <main class="wrap grid">
+    <!-- LEFT: draw pad + controls -->
+    <section class="panel left">
+      <div class="pad-wrap">
+        <canvas id="pad" width="280" height="280" aria-label="Drawing pad"></canvas>
+      </div>
+
+      <div class="controls">
+        <button id="predictBtn" class="btn primary">Predict</button>
+        <button id="clearBtn" class="btn">Clear</button>
+
+        <label class="control chip">
+          <span>Brush</span>
+          <input id="brush" type="range" min="3" max="40" step="1" value="14" />
+        </label>
+
+        <label class="control chip">
+          <input id="centerChk" type="checkbox" checked />
+          <span>Center if μ available</span>
+        </label>
+
+        <button id="downloadCsvBtn" class="btn">Download 28×28 (.csv)</button>
+      </div>
+    </section>
+
+    <!-- RIGHT: status + preview + scores -->
+    <section class="panel right">
+      <div class="status" id="status">Model loaded.</div>
+
+      <div class="pred">
+        <span class="pred-label">Prediction:</span>
+        <span id="predVal" class="pred-value">—</span>
+      </div>
+
+      <div class="thumb-row">
+        <canvas id="thumb" width="28" height="28" aria-label="28×28 thumbnail"></canvas>
+        <div class="thumb-caption">28×28 preview</div>
+      </div>
+
+      <details class="scores">
+        <summary>Scores (debug)</summary>
+        <pre id="scores"></pre>
+      </details>
+
+      <p class="hint">Shortcuts: <kbd>Space</kbd> = Predict, <kbd>C</kbd> = Clear</p>
+
+      <p class="footnote">
+        Model: <code>models/mlp_p1.json</code> • Pure HTML/CSS/JS
+      </p>
+    </section>
+  </main>
+
+  <script src="app.js" defer></script>
 </body>
 </html>
