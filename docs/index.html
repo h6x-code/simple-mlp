@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Simple MLP Demo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="grid">
+  <section class="left">
+    <h1>Simple MLP</h1>
+    <p>Draw a digit in the 280×280 pad. It downscales to 28×28 (foreground≈1).</p>
+    <canvas id="pad" width="280" height="280"></canvas>
+    <div class="controls">
+      <button id="predictBtn">Predict</button>
+      <button id="clearBtn">Clear</button>
+      <label>Brush <input id="brush" type="range" min="3" max="40" value="14"></label>
+      <label><input id="centerChk" type="checkbox" checked> Center if μ available</label>
+      <button id="downloadCsvBtn">Download 28×28 (.csv)</button>
+    </div>
+  </section>
+  <section class="right">
+    <div id="status">Loading model…</div>
+    <div>Prediction: <span id="predVal">—</span></div>
+    <canvas id="thumb" width="28" height="28"></canvas>
+    <details><summary>Scores (debug)</summary><pre id="scores"></pre></details>
+    <p>Shortcuts: Space = Predict, C = Clear</p>
+  </section>
+</main>
+<script src="app.js" defer></script>
+</body>
+</html>

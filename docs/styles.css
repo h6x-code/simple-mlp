@@ -1,0 +1,160 @@
+D/* 1) Root variables */
+:root {
+  --bg: #0f0f0f;
+  --panel: #1e1e1e;
+  --text: #e8e8e8;
+  --muted: #a0a0a0;
+  --border: #4a4a4a;
+
+  --accent: #3d82f6; /* subtle blue for focus/hover */
+  --radius: 8px;
+  --pad: 16px;
+
+  --font: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* 2) Base elements */
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  margin: 0;
+}
+
+h1, h2, h3 {
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+p {
+  margin: 0 0 8px 0;
+  color: var(--muted);
+}
+
+button, label, input[type="range"] {
+  font: inherit;
+}
+
+/* 3) Layout grid */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 4) Panels */
+.left, .right {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--pad);
+}
+
+/* 5) Canvas + controls */
+#pad {
+  display: block;
+  width: 280px;
+  height: 280px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: crosshair;
+}
+
+.controls {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+button {
+  background: #2a2a2a;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  line-height: 1;
+}
+
+button:hover {
+  background: #323232;
+  border-color: var(--accent);
+  cursor: pointer;
+}
+
+label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #252525;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+input[type="range"] {
+  width: 140px;
+}
+
+/* Thumbnail preview */
+#thumb {
+  display: block;
+  width: 140px;         /* scale-up for visibility */
+  height: 140px;
+  image-rendering: pixelated;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin-top: 8px;
+}
+
+/* 6) Debug / misc */
+details {
+  margin-top: 12px;
+}
+
+summary {
+  cursor: pointer;
+  color: var(--text);
+}
+
+pre {
+  background: #191919;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 0.85rem;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+#status {
+  margin-bottom: 8px;
+  color: var(--muted);
+}
+
+.pred {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+/* 7) Responsive tweaks */
+@media (max-width: 920px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* keep canvases centered on small screens */
+  #pad, #thumb {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
