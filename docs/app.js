@@ -21,7 +21,7 @@ window.addEventListener("DOMContentLoaded", () => {
   ctxThumb = thumb.getContext("2d");
 
   // Load model (no-cache to avoid GH Pages caching issues)
-  fetch("models/mlp_p1.json?v=1", { cache: "no-store" })
+  fetch("models/mlp_p1.json?v=" + Date.now(), { cache: "no-store" })
     .then(r => r.json())
     .then(js => loadModel(js))
     .catch(err => {
