@@ -66,7 +66,7 @@ def update_manifest(model_file: Path, hidden: int, epochs: int):
     """Append or update docs/models/manifest.json with this model."""
     manifest_path = model_file.parent / "manifest.json"
     entry = {
-        "label": f"MLP (H={hidden}, {epochs}ep) — {model_file.name}",
+        "label": f"{ARCH} (H={hidden}, {epochs}ep) — {model_file.name}",
         "file": model_file.name
     }
     items = []
