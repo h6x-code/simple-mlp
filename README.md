@@ -28,16 +28,16 @@ pip install -r requirements.txt
 You can customize training with arguments to `src/train_mlp.py`.  
 Run `python src/train_mlp.py -h` to see the full help.
 
-| Option                | Type    | Default    | Description |
-|-----------------------|---------|------------|-------------|
-| `-e`, `--epochs`      | int     | `10`       | Number of training epochs. |
-| `-H`, `--hidden`      | int     | `128`      | Hidden layer size of the MLP. |
-| `-b`, `--batch`       | int     | `128`      | Batch size for training and evaluation. |
-| `-lr`, `--lr`         | float   | `0.001`    | Learning rate for Adam optimizer. |
-| `-s`, `--seed`        | int     | `1337`       | Random seed for reproducibility. |
-| `--no-center-eval`    | flag    | *(false)*  | By default evaluation subtracts the dataset mean (μ). Use this flag to disable centering. |
-| `-o`, `--out-name`    | string  | `"mlp.json"` | Filename for the exported model JSON (written to `docs/models/`). |
-| `-a`, `--architecture | string  | `0.0.0`    | Optional metadata tag.
+| Option                 | Type    | Default    | Description |
+|------------------------|---------|------------|-------------|
+| `-e`, `--epochs`       | int     | `10`       | Number of training epochs. |
+| `-H`, `--hidden`       | int     | `128`      | Hidden layer size of the MLP. |
+| `-b`, `--batch`        | int     | `128`      | Batch size for training and evaluation. |
+| `-lr`, `--lr`          | float   | `0.001`    | Learning rate for Adam optimizer. |
+| `-s`, `--seed`         | int     | `1337`       | Random seed for reproducibility. |
+| `--no-center-eval`     | flag    | *(false)*  | By default evaluation subtracts the dataset mean (μ). Use this flag to disable centering. |
+| `-o`, `--out-name`     | string  | `"mlp.json"` | Filename for the exported model JSON (written to `docs/models/`). |
+| `-a`, `--architecture` | string  | `0.0.0`    | Optional metadata tag.
 
 ### Examples
 
