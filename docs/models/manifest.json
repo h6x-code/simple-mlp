@@ -1,0 +1,14 @@
+[
+  {
+    "label": "MLP (H=256, 100ep) \u2014 mlp_p3.json",
+    "file": "mlp_p3.json"
+  },
+  {
+    "label": "MLP (H=256, 10ep) \u2014 mlp_p2.json",
+    "file": "mlp_p2.json"
+  },
+  {
+    "label": "MLP (H=128, 10ep) \u2014 mlp_p1.json",
+    "file": "mlp_p1.json"
+  }
+]

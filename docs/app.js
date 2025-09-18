@@ -12,6 +12,7 @@ window.addEventListener("DOMContentLoaded", () => {
   predEl    = document.getElementById("predVal");
   centerChk = document.getElementById("centerChk");
   scoresEl  = document.getElementById("scores");
+  modelSel  = document.getElementById("modelSel");
 
   ctxPad = pad.getContext("2d", { willReadFrequently: true });
   ctxPad.fillStyle = "white";
@@ -20,14 +21,13 @@ window.addEventListener("DOMContentLoaded", () => {
   const thumb = document.getElementById("thumb");
   ctxThumb = thumb.getContext("2d");
 
-  // Load model (no-cache to avoid GH Pages caching issues)
-  fetch("models/mlp_p1.json?v=" + Date.now(), { cache: "no-store" })
-    .then(r => r.json())
-    .then(js => loadModel(js))
-    .catch(err => {
-      console.error(err);
-      statusEl.textContent = "Model load failed.";
-    });
+  // Load manifest first; fallback to default mlp_p1.json if missing
+  loadManifest().then(list => {
+    populateModelSelect(list);
+    // initial load
+    const file = modelSel.value;
+    loadModelFile(file);
+  });
 
   // Drawing handlers
   pad.addEventListener("mousedown", e => { drawing = true; draw(e); });
@@ -45,6 +45,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("clearBtn").onclick = clearPad;
   document.getElementById("predictBtn").onclick = predict;
   document.getElementById("downloadCsvBtn").onclick = downloadCsv;
+  document.getElementById("reloadBtn").onclick = () => loadModelFile(modelSel.value);
 
   // Shortcuts
   window.addEventListener("keydown", e => {
@@ -52,6 +53,40 @@ window.addEventListener("DOMContentLoaded", () => {
     if (e.key === "c" || e.key === "C") { clearPad(); }
   });
 });
+
+// ---------- manifest + model loading ----------
+async function loadManifest() {
+  try {
+    const r = await fetch("models/manifest.json?v=" + Date.now(), { cache: "no-store" });
+    if (!r.ok) throw new Error("no manifest");
+    const list = await r.json();
+    if (Array.isArray(list) && list.length) return list;
+  } catch(e) { /* ignore */ }
+  // fallback: single default
+  return [{ label: "Default (mlp_p1.json)", file: "mlp_p1.json" }];
+}
+
+function populateModelSelect(list) {
+  modelSel.innerHTML = "";
+  for (const item of list) {
+    const opt = document.createElement("option");
+    opt.value = item.file;
+    opt.textContent = item.label || item.file;
+    modelSel.appendChild(opt);
+  }
+}
+
+async function loadModelFile(file) {
+  statusEl.textContent = `Loading ${file}…`;
+  try {
+    const r = await fetch("models/" + file + "?v=" + Date.now(), { cache: "no-store" });
+    const js = await r.json();
+    loadModel(js, file);
+  } catch (e) {
+    console.error(e);
+    statusEl.textContent = `Failed to load ${file}`;
+  }
+}
 
 function loadModel(js) {
   // Coerce to finite numbers

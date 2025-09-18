@@ -9,7 +9,7 @@
 <body>
   <header class="site-header">
     <div class="wrap">
-      <h1>Simple MLP</h1>
+      <h1>Simple Multi-layer Perceptron</h1>
       <p class="subtitle">Draw a digit in the 280×280 pad. It downscales to 28×28 (foreground≈1).</p>
     </div>
   </header>
@@ -41,31 +41,35 @@
 
     <!-- RIGHT: status + preview + scores -->
     <section class="panel right">
-      <div class="status" id="status">Model loaded.</div>
+    <div class="status" id="status">Loading model…</div>
 
-      <div class="pred">
+    <!-- NEW: model selector -->
+    <div class="model-row" style="margin-bottom:10px">
+        <label class="control chip" style="gap:10px">
+        <span>Model</span>
+        <select id="modelSel"></select>
+        </label>
+        <button id="reloadBtn" class="btn">Load</button>
+    </div>
+
+    <div class="pred">
         <span class="pred-label">Prediction:</span>
         <span id="predVal" class="pred-value">—</span>
-      </div>
+    </div>
 
-      <div class="thumb-row">
+    <!-- rest of right panel unchanged -->
+    <div class="thumb-row">
         <canvas id="thumb" width="28" height="28" aria-label="28×28 thumbnail"></canvas>
         <div class="thumb-caption">28×28 preview</div>
-      </div>
+    </div>
 
-      <details class="scores">
-        <summary>Scores (debug)</summary>
-        <pre id="scores"></pre>
-      </details>
-
-      <p class="hint">Shortcuts: <kbd>Space</kbd> = Predict, <kbd>C</kbd> = Clear</p>
-
-      <p class="footnote">
-        Model: <code>models/mlp_p1.json</code> • Pure HTML/CSS/JS
-      </p>
+    <details class="scores"><summary>Scores (debug)</summary><pre id="scores"></pre></details>
+    <p class="hint">Shortcuts: <kbd>Space</kbd> = Predict, <kbd>C</kbd> = Clear</p>
+    <p class="footnote">Model: <code>models/*.json</code> • Pure HTML/CSS/JS</p>
     </section>
-  </main>
 
-  <script src="app.js?v=3" defer></script>
+    </main>
+
+    <script src="app.js?v=4" defer></script>
 </body>
 </html>
