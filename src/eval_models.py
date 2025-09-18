@@ -205,7 +205,7 @@ def main():
             metrics["accuracy"], metrics["top3_accuracy"], metrics["macro_f1"], metrics["weighted_f1"], metrics["nll"]
         ))
         manifest.append({
-            "label": f"{fp.name} (H={params['H']}, center={int(args.center)})",
+            "label": f"{fp.name.split('.')[0]} (H={params['H']}, center={int(args.center)})",
             "report": f"{stem}.json",
             "confusion": f"confusion_{stem}.csv"
         })
@@ -216,7 +216,7 @@ def main():
         with open(sum_path, "w") as f:
             f.write("file,hidden,center,accuracy,top3_accuracy,macro_f1,weighted_f1,nll\n")
             for r in summary_rows:
-                f.write(f"{r[0]},{r[1]},{r[2]},{r[3]:.6f},{r[4]:.6f},{r[5]:.6f},{r[6]:.6f},{r[7]:.6f}\n")
+                f.write(f"{r[0]},{r[1]},{r[2]},{r[3]:.4f},{r[4]:.4f},{r[5]:.4f},{r[6]:.4f},{r[7]:.4f}\n")
         print(f"\nSummary → {sum_path}")
 
         (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2))
