@@ -12,7 +12,7 @@ Select from a variety of models:
 | fast      | 64                 | 5      | 83.89%        |
 | p1        | 128                | 10     | 88.34%        |
 | p2        | 256                | 10     | 90.44%        |
-| p2.1      | 256                | 100    | 93.04%        |
+| p2.1      | 256                | 40     | 91.20%        |
 | p3        | 512                | 10     | 90.08%        |
 | p3.1      | 512                | 40     | 94.02%        |
 
@@ -28,15 +28,16 @@ pip install -r requirements.txt
 You can customize training with arguments to `src/train_mlp.py`.  
 Run `python src/train_mlp.py -h` to see the full help.
 
-| Option              | Type    | Default    | Description |
-|---------------------|---------|------------|-------------|
-| `-e`, `--epochs`    | int     | `10`       | Number of training epochs. |
-| `-H`, `--hidden`    | int     | `128`      | Hidden layer size of the MLP. |
-| `-b`, `--batch`     | int     | `128`      | Batch size for training and evaluation. |
-| `-lr`, `--lr`       | float   | `0.001`    | Learning rate for Adam optimizer. |
-| `-s`, `--seed`      | int     | `1337`       | Random seed for reproducibility. |
-| `--no-center-eval`  | flag    | *(false)*  | By default evaluation subtracts the dataset mean (μ). Use this flag to disable centering. |
-| `-o`, `--out-name`  | string  | `"mlp.json"` | Filename for the exported model JSON (written to `docs/models/`). |
+| Option                | Type    | Default    | Description |
+|-----------------------|---------|------------|-------------|
+| `-e`, `--epochs`      | int     | `10`       | Number of training epochs. |
+| `-H`, `--hidden`      | int     | `128`      | Hidden layer size of the MLP. |
+| `-b`, `--batch`       | int     | `128`      | Batch size for training and evaluation. |
+| `-lr`, `--lr`         | float   | `0.001`    | Learning rate for Adam optimizer. |
+| `-s`, `--seed`        | int     | `1337`       | Random seed for reproducibility. |
+| `--no-center-eval`    | flag    | *(false)*  | By default evaluation subtracts the dataset mean (μ). Use this flag to disable centering. |
+| `-o`, `--out-name`    | string  | `"mlp.json"` | Filename for the exported model JSON (written to `docs/models/`). |
+| `-a`, `--architecture | string  | `0.0.0`    | Optional metadata tag.
 
 ### Examples
 
@@ -58,6 +59,18 @@ python src/train_mlp.py -H 256 --no-center-eval
 Export a model under a custom name:
 ```bash
 python src/train_mlp.py -o mlp_custom.json
+```
+
+## Reports & Evaluation
+
+Evaluate every model JSON in `docs/models/` and write structured metrics to `reports/`:
+
+```bash
+python src/eval_models.py
+# options:
+python src/eval_models.py --no-center      # disable μ-centering during eval
+python src/eval_models.py --batch 1024     # speed up on CPU
+python src/eval_models.py --limit 5000     # quick run on 5k samples
 ```
 
 ## Run the Demo Locally

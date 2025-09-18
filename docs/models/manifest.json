@@ -1,6 +1,26 @@
 [
   {
-    "label": "0.0.0 (H=128, 10ep) \u2014 mlp.json",
-    "file": "mlp.json"
+    "label": "p3.1 (H=512, 40ep) \u2014 p3.1.json",
+    "file": "p3.1.json"
+  },
+  {
+    "label": "p3 (H=512, 10ep) \u2014 p3.json",
+    "file": "p3.json"
+  },
+  {
+    "label": "p2.1 (H=256, 40ep) \u2014 p2.1.json",
+    "file": "p2.1.json"
+  },
+  {
+    "label": "p2 (H=256, 10ep) \u2014 p2.json",
+    "file": "p2.json"
+  },
+  {
+    "label": "p1 (H=128, 10ep) \u2014 p1.json",
+    "file": "p1.json"
+  },
+  {
+    "label": "fast (H=64, 5ep) \u2014 fast.json",
+    "file": "fast.json"
   }
 ]

@@ -46,7 +46,7 @@ def compute_mu(loader, device):
         b=x.size(0); tot+=x.to(device).view(b,-1).sum(0); n+=b
     return tot/n
 
-def export_json(model, mu, out_path: Path, hidden_size, epochs):
+def export_json(model, mu, out_path: Path, hidden_size, epochs, arch):
     out_path.parent.mkdir(parents=True, exist_ok=True)
     W1 = model.fc1.weight.detach().cpu().numpy().astype(float).ravel().tolist()
     b1 = model.fc1.bias.detach().cpu().numpy().astype(float).ravel().tolist()
@@ -55,10 +55,10 @@ def export_json(model, mu, out_path: Path, hidden_size, epochs):
     mu_list = mu.detach().cpu().numpy().astype(float).ravel().tolist()
 
     payload = {
-        "meta": {"arch": f"{ARCH}",
+        "meta": {"arch": arch,
                  "n_features": 784,
-                 "n_classes": 10,
                  "hidden": hidden_size,
+                 "n_classes": 10,
                  "epochs": epochs},
         "W1": W1, "b1": b1, "W2": W2, "b2": b2, "mu": mu_list,
     }
@@ -70,7 +70,7 @@ def update_manifest(model_file: Path, hidden: int, epochs: int):
     """Append or update docs/models/manifest.json with this model."""
     manifest_path = model_file.parent / "manifest.json"
     entry = {
-        "label": f"{ARCH} (H={hidden}, {epochs}ep) — {model_file.name}",
+        "label": f"{model_file.name.split('.')[:-1]} (H={hidden}, {epochs}ep) — {model_file.name}",
         "file": model_file.name
     }
     items = []
@@ -100,7 +100,6 @@ def main():
     a = ap.parse_args()
 
     set_seeds(a.seed)
-    ARCH = a.architecture
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     tfm = transforms.ToTensor()
     tr = datasets.MNIST("data", train=True,  download=True, transform=tfm)
@@ -124,7 +123,7 @@ def main():
         print(f"Epoch {e}: test acc {acc*100:.2f}%")
 
     out_path = Path("docs/models") / a.out_name
-    export_json(m, mu, out_path, a.hidden, a.epochs)
+    export_json(m, mu, out_path, a.hidden, a.epochs, a.architecture)
     update_manifest(out_path, a.hidden, a.epochs)
 
 if __name__ == "__main__":
