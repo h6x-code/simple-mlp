@@ -46,7 +46,7 @@ def compute_mu(loader, device):
         b=x.size(0); tot+=x.to(device).view(b,-1).sum(0); n+=b
     return tot/n
 
-def export_json(model, mu, out_path: Path):
+def export_json(model, mu, out_path: Path, hidden_size, epochs):
     out_path.parent.mkdir(parents=True, exist_ok=True)
     W1 = model.fc1.weight.detach().cpu().numpy().astype(float).ravel().tolist()
     b1 = model.fc1.bias.detach().cpu().numpy().astype(float).ravel().tolist()
@@ -55,7 +55,11 @@ def export_json(model, mu, out_path: Path):
     mu_list = mu.detach().cpu().numpy().astype(float).ravel().tolist()
 
     payload = {
-        "meta": {"arch": f"{ARCH}", "n_features": 784, "n_classes": 10},
+        "meta": {"arch": f"{ARCH}",
+                 "n_features": 784,
+                 "n_classes": 10,
+                 "hidden": hidden_size,
+                 "epochs": epochs},
         "W1": W1, "b1": b1, "W2": W2, "b2": b2, "mu": mu_list,
     }
     with open(out_path, "w") as f:
@@ -120,7 +124,7 @@ def main():
         print(f"Epoch {e}: test acc {acc*100:.2f}%")
 
     out_path = Path("docs/models") / a.out_name
-    export_json(m, mu, out_path)
+    export_json(m, mu, out_path, a.hidden, a.epochs)
     update_manifest(out_path, a.hidden, a.epochs)
 
 if __name__ == "__main__":
