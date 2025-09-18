@@ -297,16 +297,25 @@ function renderConfusion(conf) {
   const rect = canvas.getBoundingClientRect();
   const W = rect.width, H = rect.height;
 
-  const pad = 36;       // inner padding around grid
-  const tPad = 28;      // outer space for axis titles
   clearCanvas(ctx, canvas);
 
-  // compute grid size that fits
-  const usableW = W - tPad * 2;
-  const usableH = H - tPad * 2;
-  const cell = Math.floor((Math.min(usableW, usableH) - pad * 2) / N);
+  // outer padding (axis titles)
+  const titlePad = 28;
+  // inner padding around the grid
+  const pad = 32;
+  // reserve fixed legend width + gap on the right
+  const legendW = 52;       // bar width + labels
+  const legendGap = 16;
+
+  // compute max square grid that fits WITH legend reservation
+  const usableW = W - titlePad * 2 - legendW - legendGap;
+  const usableH = H - titlePad * 2;
+  const cell = Math.max(1, Math.floor((Math.min(usableW, usableH) - pad * 2) / N));
   const gridSize = cell * N;
-  const x0 = Math.round((W - gridSize) / 2);
+
+  // center the grid horizontally in the space that excludes legend
+  const leftSpace = (W - legendW - legendGap) - gridSize;
+  const x0 = Math.round(leftSpace / 2);
   const y0 = Math.round((H - gridSize) / 2);
 
   // normalize rows to probabilities
@@ -315,7 +324,7 @@ function renderConfusion(conf) {
     return row.map(v => v / s);
   });
 
-  // cells
+  // draw cells
   for (let i = 0; i < N; i++) {
     for (let j = 0; j < N; j++) {
       const p = probs[i][j];
@@ -332,25 +341,25 @@ function renderConfusion(conf) {
     ctx.beginPath(); ctx.moveTo(x0 + k * cell, y0); ctx.lineTo(x0 + k * cell, y0 + gridSize); ctx.stroke();
   }
 
-  // tick labels (0..9)
+  // tick labels
   ctx.fillStyle = "#e7eaf0"; ctx.font = "12px system-ui"; ctx.textAlign = "center";
   for (let d = 0; d < N; d++) {
-    ctx.fillText(String(d), x0 + d * cell + cell / 2, y0 - 8);                   // top (pred)
-    ctx.fillText(String(d), x0 - 14, y0 + d * cell + cell / 2 + 4);             // left (true)
+    ctx.fillText(String(d), x0 + d * cell + cell / 2, y0 - 8);                // top (Predicted)
+    ctx.fillText(String(d), x0 - 14, y0 + d * cell + cell / 2 + 4);           // left (True)
   }
 
   // axis titles
   ctx.save();
-  ctx.font = "13px system-ui";
-  ctx.textAlign = "center";
+  ctx.font = "13px system-ui"; ctx.fillStyle = "#e7eaf0"; ctx.textAlign = "center";
   ctx.fillText("Predicted", x0 + gridSize / 2, y0 - 28);
   ctx.translate(x0 - 42, y0 + gridSize / 2);
   ctx.rotate(-Math.PI / 2);
   ctx.fillText("True", 0, 0);
   ctx.restore();
 
-  // color legend (right)
-  drawLegend(ctx, x0 + gridSize + 18, y0, 12, gridSize, "0%", "100%");
+  // legend on the right (fits in reserved area)
+  const legendX = x0 + gridSize + legendGap;
+  drawLegend(ctx, legendX, y0, 12, gridSize, "0%", "100%");
 
   // hover readout
   const hover = q("#confHover");
@@ -358,11 +367,11 @@ function renderConfusion(conf) {
     const r = canvas.getBoundingClientRect();
     const j = Math.floor((e.clientX - r.left - x0) / cell);
     const i = Math.floor((e.clientY - r.top  - y0) / cell);
-    if (i >= 0 && i < N && j >= 0 && j < N) {
-      hover.textContent = `true=${i} → pred=${j}  |  count=${conf[i][j]}`;
-    } else hover.textContent = "";
+    if (i >= 0 && i < N && j >= 0 && j < N) hover.textContent = `true=${i} → pred=${j}  |  count=${conf[i][j]}`;
+    else hover.textContent = "";
   };
 }
+
 
 /* ---------- Utilities ---------- */
 function roundRect(ctx, x, y, w, h, r, fill) {

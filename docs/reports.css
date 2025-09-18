@@ -7,13 +7,11 @@
 .table th { background: #1c2130; text-align: left; }
 .table td:first-child, .table th:first-child { text-align: left; }
 
-/* NEW: two even columns, stretch children */
 .canvas-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .canvas-col  { padding: 8px 12px; }
-
-/* NEW: canvases fill width; keep aspect-ratio for responsive height */
 .canvas-col canvas { width: 100%; height: auto; display: block; }
-#chartPerClass { aspect-ratio: 16 / 9; }   /* widescreen bar chart  */
-#chartConf     { aspect-ratio: 1 / 1; }    /* square heatmap        */
+
+#chartPerClass { aspect-ratio: 1 / 1; }
+#chartConf     { aspect-ratio: 1 / 1; }
 
 .model-picker { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
