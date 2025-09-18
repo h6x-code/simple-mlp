@@ -14,8 +14,9 @@ import torch, torch.nn as nn, torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from tqdm import tqdm
+import sys
 
-ARCH = "0.0.0"
+TQDM_ENABLED = sys.stdout.isatty()
 
 def set_seeds(seed=1337):
     random.seed(seed); np.random.seed(seed)
@@ -34,17 +35,27 @@ class MLP(nn.Module):
 @torch.no_grad()
 def evaluate(model, loader, device, mu=None, center=False):
     model.eval(); n=0; c=0
-    for x,y in loader:
+    for x, y in tqdm(loader,
+                     desc="eval",
+                     ncols=80,
+                     leave=False,
+                     disable=not TQDM_ENABLED):
         x=x.to(device).view(x.size(0),-1); y=y.to(device)
         logits=model(x,mu,center); pred=logits.argmax(1)
         c+=(pred==y).sum().item(); n+=y.numel()
     return c/n
 
+
 def compute_mu(loader, device):
     tot=torch.zeros(784,device=device); n=0
-    for x,_ in loader:
+    for x,_ in tqdm(loader,
+                    desc="μ",
+                    ncols=80,
+                    leave=False,
+                    disable=not TQDM_ENABLED):
         b=x.size(0); tot+=x.to(device).view(b,-1).sum(0); n+=b
     return tot/n
+
 
 def export_json(model, mu, out_path: Path, hidden_size, epochs, arch):
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -69,10 +80,12 @@ def export_json(model, mu, out_path: Path, hidden_size, epochs, arch):
 def update_manifest(model_file: Path, hidden: int, epochs: int):
     """Append or update docs/models/manifest.json with this model."""
     manifest_path = model_file.parent / "manifest.json"
+    stem = model_file.stem
     entry = {
-        "label": f"{model_file.name.split('.')[:-1]} (H={hidden}, {epochs}ep) — {model_file.name}",
+        "label": f"{stem} (H={hidden}, {epochs}ep)",
         "file": model_file.name
     }
+
     items = []
     if manifest_path.exists():
         try:
@@ -101,26 +114,49 @@ def main():
 
     set_seeds(a.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    tfm = transforms.ToTensor()
-    tr = datasets.MNIST("data", train=True,  download=True, transform=tfm)
-    te = datasets.MNIST("data", train=False, download=True, transform=tfm)
+    tfm_train = transforms.Compose([
+        transforms.RandomAffine(degrees=10, translate=(0.1, 0.1), scale=(0.95, 1.05), fill=0),
+        transforms.ToTensor(),
+    ])
+    tfm_test  = transforms.ToTensor()
+
+    tr = datasets.MNIST("data", train=True,  download=True, transform=tfm_train)
+    te = datasets.MNIST("data", train=False, download=True, transform=tfm_test)
+
     trL = DataLoader(tr, batch_size=a.batch, shuffle=True, num_workers=2)
     teL = DataLoader(te, batch_size=512, shuffle=False, num_workers=2)
-    mu  = compute_mu(DataLoader(tr, batch_size=1024, shuffle=False, num_workers=2), device)
+
+    # Compute mu on the original (non-augmented) train set
+    mu = compute_mu(DataLoader(
+        datasets.MNIST("data", train=True, download=True, transform=tfm_test),
+        batch_size=1024, shuffle=False, num_workers=2
+    ), device)
 
     m = MLP(a.hidden).to(device)
-    opt = torch.optim.Adam(m.parameters(), lr=a.lr)
-    crit = nn.CrossEntropyLoss()
 
-    for e in range(1, a.epochs + 1):
+    # Use AdamW + schedule
+    opt = torch.optim.Adam(m.parameters(), lr=a.lr, weight_decay=1e-4)
+    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=a.epochs)
+
+    # Label smoothing CE
+    crit = nn.CrossEntropyLoss(label_smoothing=0.1)
+
+    # Train on centered inputs
+    for e in range(1, a.epochs+1):
         m.train()
-        for x, y in tqdm(trL, desc=f"Epoch {e}/{a.epochs}", ncols=80):
-            x = x.to(device).view(x.size(0), -1); y = y.to(device)
-            logits = m(x, mu=None, center=False)
-            loss = crit(logits, y)
+        for x, y in tqdm(trL,
+                        desc=f"Epoch {e}/{a.epochs}",
+                        ncols=80,
+                        leave=False,
+                        disable=not TQDM_ENABLED):
+            x = x.to(device).view(x.size(0), -1) - mu
+            y = y.to(device)
+            loss = crit(m(x, mu=None, center=False), y)
             opt.zero_grad(set_to_none=True); loss.backward(); opt.step()
-        acc = evaluate(m, teL, device, mu=mu, center=(not a.no_center_eval))
-        print(f"Epoch {e}: test acc {acc*100:.2f}%")
+
+        sched.step()
+        acc = evaluate(m, teL, device, mu=mu, center=True)
+        print(f"Epoch {e}: test acc {acc*100:.2f}% lr={sched.get_last_lr()[0]:.5f}")
 
     out_path = Path("docs/models") / a.out_name
     export_json(m, mu, out_path, a.hidden, a.epochs, a.architecture)
