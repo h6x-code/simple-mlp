@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from tqdm import tqdm
 
-PHASE = 2
+ARCH = "0.0.0"
 
 def set_seeds(seed=1337):
     random.seed(seed); np.random.seed(seed)
@@ -55,7 +55,7 @@ def export_json(model, mu, out_path: Path):
     mu_list = mu.detach().cpu().numpy().astype(float).ravel().tolist()
 
     payload = {
-        "meta": {"arch": "mlp_p1", "n_features": 784, "n_classes": 10},
+        "meta": {"arch": f"{ARCH}", "n_features": 784, "n_classes": 10},
         "W1": W1, "b1": b1, "W2": W2, "b2": b2, "mu": mu_list,
     }
     with open(out_path, "w") as f:
@@ -85,17 +85,18 @@ def update_manifest(model_file: Path, hidden: int, epochs: int):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--epochs", type=int, default=10)
-    ap.add_argument("--hidden", type=int, default=128)
-    ap.add_argument("--batch",  type=int, default=128)
-    ap.add_argument("--lr",     type=float, default=1e-3)
-    ap.add_argument("--seed",   type=int, default=1337)
-    ap.add_argument("--no-center-eval", action="store_true")
-    ap.add_argument("--out-name", type=str, default="mlp_p1.json",
-                    help="filename under docs/models/ (e.g., mlp_p1.json)")
+    ap.add_argument('-e', "--epochs", type=int, default=10, help="Number of training epochs.")
+    ap.add_argument('-H', "--hidden", type=int, default=128, help="Hidden layer size of the MLP.")
+    ap.add_argument('-b', "--batch",  type=int, default=128, help="Batch size for training and evaluation.")
+    ap.add_argument('-lr', "--lr",     type=float, default=1e-3, help="Learning rate for Adam optimizer.")
+    ap.add_argument('-s', "--seed",   type=int, default=1337, help="Random seed for reproducibility.")
+    ap.add_argument("--no-center-eval", action="store_true", help="By default evaluation subtracts the dataset mean (μ). Use this flag to disable centering.")
+    ap.add_argument('-o', "--out-name", type=str, default="mlp.json", help="Filename for the exported model JSON (written to `docs/models/`).")
+    ap.add_argument('-a', "--architecture", type=str, default="0.0.0", help="Meta tag")
     a = ap.parse_args()
 
     set_seeds(a.seed)
+    ARCH = a.architecture
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     tfm = transforms.ToTensor()
     tr = datasets.MNIST("data", train=True,  download=True, transform=tfm)
