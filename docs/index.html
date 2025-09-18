@@ -70,7 +70,12 @@
 
     <!-- Interpretability -->
     <section class="panel" id="xaiPanel">
-      <h3>Explain prediction</h3>
+      <h3>Explain Prediction</h3>
+        <p class="subtle">
+          Visual tools to peek inside the model:
+          <br><strong>Saliency</strong> highlights which input pixels most influenced the prediction,
+          and <strong>Hidden layer</strong> shows the activation strengths of all hidden neurons as a heatmap.
+        </p>
       <div class="xai-controls">
         <button id="btnSaliency">Saliency (∂logit/∂x)</button>
         <button id="btnActivations">Hidden layer</button>

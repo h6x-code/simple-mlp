@@ -251,4 +251,9 @@ kbd{
   background:#0b0f1a; 
   border:1px solid var(--border); 
 }
+#xaiPanel p.subtle {
+  font-size: 13px;
+  color: #aeb8cc;
+  margin: 4px 0 10px;
+}
 
