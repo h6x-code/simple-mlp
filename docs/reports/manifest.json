@@ -1,31 +1,31 @@
 [
   {
-    "label": "fast (H=64, center=1)",
+    "label": "fast (H=64, epochs=5)",
     "report": "mlp_fast.json",
     "confusion": "confusion_mlp_fast.csv"
   },
   {
-    "label": "p1 (H=128, center=1)",
+    "label": "p1 (H=128, epochs=10)",
     "report": "mlp_p1.json",
     "confusion": "confusion_mlp_p1.csv"
   },
   {
-    "label": "p2.1 (H=256, center=1)",
+    "label": "p2.1 (H=256, epochs=100)",
     "report": "mlp_p2.1.json",
     "confusion": "confusion_mlp_p2.1.csv"
   },
   {
-    "label": "p2 (H=256, center=1)",
+    "label": "p2 (H=256, epochs=10)",
     "report": "mlp_p2.json",
     "confusion": "confusion_mlp_p2.csv"
   },
   {
-    "label": "p3.1 (H=512, center=1)",
+    "label": "p3.1 (H=512, epochs=40)",
     "report": "mlp_p3.1.json",
     "confusion": "confusion_mlp_p3.1.csv"
   },
   {
-    "label": "p3 (H=512, center=1)",
+    "label": "p3 (H=512, epochs=10)",
     "report": "mlp_p3.json",
     "confusion": "confusion_mlp_p3.csv"
   }
