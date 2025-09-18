@@ -1,4 +1,4 @@
-// Vanilla JS charts for summary + per-model, no libraries.
+// JS charts for summary + per-model, with full labels (no libraries).
 
 const q = s => document.querySelector(s);
 let manifest = [];
@@ -73,11 +73,8 @@ async function loadSelectedModel() {
   }
 }
 
-/* ---------- Summary table & chart ---------- */
-function parseCSV(text) {
-  const lines = text.trim().split(/\r?\n/).map(l => l.split(","));
-  return lines; // [ [header...], [row...] ...]
-}
+/* ---------- Summary table ---------- */
+function parseCSV(text) { return text.trim().split(/\r?\n/).map(l => l.split(",")); }
 
 function renderSummaryTable(rows) {
   const table = q("#summaryTable");
@@ -88,8 +85,7 @@ function renderSummaryTable(rows) {
   for (const h of rows[0]) {
     const th = document.createElement("th"); th.textContent = h; trh.appendChild(th);
   }
-  thead.appendChild(trh);
-  table.appendChild(thead);
+  thead.appendChild(trh); table.appendChild(thead);
 
   const tbody = document.createElement("tbody");
   for (let i = 1; i < rows.length; i++) {
@@ -102,6 +98,7 @@ function renderSummaryTable(rows) {
   table.appendChild(tbody);
 }
 
+/* ---------- Summary chart (75–100% + labels) ---------- */
 function renderSummaryChart(rows) {
   if (rows.length <= 1) return;
   const header = rows[0];
@@ -118,11 +115,8 @@ function renderSummaryChart(rows) {
   const ctx = canvas.getContext("2d");
   clearCanvas(ctx, canvas);
 
-  // ── Bigger paddings so labels/bars breathe ─────────────────────
-  const padL = 100;   // y-axis labels
-  const padR = 40;    // space at right end
-  const padT = 28;    // value labels above bars
-  const padB = 80;    // angled file labels under axis
+  // generous paddings for labels
+  const padL = 110, padR = 50, padT = 36, padB = 96;
 
   const W = canvas.width, H = canvas.height;
   const n = values.length;
@@ -138,19 +132,31 @@ function renderSummaryChart(rows) {
   ctx.lineTo(W - padR, H - padB);
   ctx.stroke();
 
-  // grid + Y labels (every 2%)
+  // Y grid + tick labels
+  ctx.textAlign = "right";
   for (let t = ymin; t <= ymax + 1e-6; t += 0.02) {
     const y = map(ymin, ymax, t, H - padB, padT);
-    ctx.globalAlpha = 0.2;
-    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-    ctx.globalAlpha = 1;
-    ctx.textAlign = "right";
-    ctx.fillText((t*100).toFixed(0) + "%", padL - 8, y + 4);
+    ctx.globalAlpha = 0.2; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+    ctx.globalAlpha = 1; ctx.fillText((t*100).toFixed(0) + "%", padL - 10, y + 4);
   }
 
-  // bars
-  const gap = 8;                                 // gap between bars
-  const barW = Math.max(28, (W - padL - padR - gap*(n-1)) / Math.max(1, n));
+  // Axis titles
+  ctx.save();
+  ctx.font = "13px system-ui";
+  // Y title
+  ctx.translate(20, (H - padB + padT) / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = "center";
+  ctx.fillText("Accuracy (%)", 0, 0);
+  ctx.restore();
+
+  // X title
+  ctx.textAlign = "center";
+  ctx.fillText("Model", (W - padR + padL) / 2, H - 12);
+
+  // bars + labels
+  const gap = 12;
+  const barW = Math.max(28, (W - padL - padR - gap * (n - 1)) / Math.max(1, n));
   for (let i = 0; i < n; i++) {
     const v = values[i];
     const x = padL + i * (barW + gap);
@@ -161,61 +167,91 @@ function renderSummaryChart(rows) {
     ctx.fillStyle = "#4f8cff";
     roundRect(ctx, x, y, barW, h, 8, true);
 
-    // value label (keep inside top padding)
+    // value label
     ctx.fillStyle = "#ffffff";
     ctx.font = "12px system-ui";
     ctx.textAlign = "center";
-    const yVal = Math.max(padT + 12, y - 6);
-    ctx.fillText((v*100).toFixed(1) + "%", x + barW/2, yVal);
+    ctx.fillText((v*100).toFixed(1) + "%", x + barW/2, Math.max(padT + 12, y - 6));
 
-    // file label (angled; uses extra bottom pad)
+    // file label (angled)
     ctx.fillStyle = "#e7eaf0";
     ctx.save();
-    ctx.translate(x + barW/2, H - padB + 44);   // push further down
-    ctx.rotate(-Math.PI / 5);                   // ~-36°
+    ctx.translate(x + barW/2, H - padB + 52);
+    ctx.rotate(-Math.PI / 5);
     ctx.textAlign = "right";
     ctx.fillText(labels[i], 0, 0);
     ctx.restore();
   }
 }
 
-/* ---------- Per-class chart ---------- */
+/* ---------- Per-class accuracy (labels + titles) ---------- */
 function renderPerClass(perClassAcc) {
   const canvas = q("#chartPerClass");
   const ctx = canvas.getContext("2d");
   clearCanvas(ctx, canvas);
 
-  const padL = 40, padR=10, padT=16, padB=28;
-  const W=canvas.width, H=canvas.height;
-  ctx.strokeStyle="#394253"; ctx.fillStyle="#e7eaf0"; ctx.font="12px system-ui";
+  const padL = 80, padR = 20, padT = 30, padB = 50;
+  const W = canvas.width, H = canvas.height;
 
   // axes
+  ctx.strokeStyle = "#394253"; ctx.fillStyle = "#e7eaf0"; ctx.font = "12px system-ui";
   ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,H-padB); ctx.lineTo(W-padR,H-padB); ctx.stroke();
 
-  const n = 10, barW = (W - padL - padR) / n;
-  for (let d=0; d<n; d++) {
+  // Y ticks (0–100%)
+  const ymin = 0.0, ymax = 1.0;
+  ctx.textAlign = "right";
+  for (let t=ymin; t<=ymax+1e-6; t+=0.2){
+    const y = map(ymin,ymax,t, H-padB, padT);
+    ctx.globalAlpha=.2; ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke();
+    ctx.globalAlpha=1; ctx.fillText((t*100).toFixed(0)+"%", padL-8, y+4);
+  }
+
+  // Axis titles
+  // Y
+  ctx.save();
+  ctx.translate(22, (H - padB + padT) / 2);
+  ctx.rotate(-Math.PI/2);
+  ctx.textAlign = "center";
+  ctx.fillText("Accuracy (%)", 0, 0);
+  ctx.restore();
+  // X
+  ctx.textAlign="center";
+  ctx.fillText("Digit", (W - padR + padL)/2, H - 12);
+
+  // bars
+  const n = 10, barW = (W - padL - padR) / n - 6;
+  for (let d=0; d<n; d++){
     const v = Number(perClassAcc[d]||0);
-    const y = map(0,1,v, H-padB, padT);
-    const h = H - padB - y;
-    const x = padL + d*barW + 6;
+    const x = padL + d*((W - padL - padR)/n) + 3;
+    const y = map(ymin,1.0,Math.max(ymin,Math.min(1,v)), H-padB, padT);
+    const h = Math.max(1, H - padB - y);
     ctx.fillStyle = "#8aa7ff";
-    roundRect(ctx, x, y, barW - 12, h, 6, true);
+    roundRect(ctx, x, y, barW, h, 6, true);
+
+    // tick label (digit)
     ctx.fillStyle = "#e7eaf0"; ctx.textAlign="center";
-    ctx.fillText(String(d), x + (barW-12)/2, H - padB + 14);
+    ctx.fillText(String(d), x + barW/2, H - padB + 16);
+
+    // value label
+    ctx.fillStyle = "#ffffff"; ctx.textAlign="center";
+    ctx.fillText((v*100).toFixed(1)+"%", x + barW/2, Math.max(padT + 12, y - 6));
   }
 }
 
-/* ---------- Confusion heatmap ---------- */
+/* ---------- Confusion matrix (axis labels + legend) ---------- */
 function renderConfusion(conf) {
   const N = conf.length; // 10
   const canvas = q("#chartConf");
   const ctx = canvas.getContext("2d");
   clearCanvas(ctx, canvas);
 
-  const pad = 26;
+  const pad = 36;                 // inner padding around grid
+  const titlePad = 28;            // outer space for axis titles
   const W = canvas.width, H = canvas.height;
-  const cell = Math.floor((Math.min(W,H) - pad*2) / N);
-  const x0 = (W - (cell*N)) / 2, y0 = (H - (cell*N)) / 2;
+  const cell = Math.floor((Math.min(W - titlePad*2, H - titlePad*2) - pad*2) / N);
+  const gridSize = cell * N;
+  const x0 = Math.round((W - gridSize) / 2);
+  const y0 = Math.round((H - gridSize) / 2);
 
   // normalize rows to probabilities
   const probs = conf.map(row => {
@@ -223,10 +259,10 @@ function renderConfusion(conf) {
     return row.map(v => v / s);
   });
 
-  // draw cells
+  // cells
   for (let i=0;i<N;i++){
     for (let j=0;j<N;j++){
-      const p = probs[i][j]; // 0..1
+      const p = probs[i][j];
       const c = colorScale(p);
       ctx.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`;
       ctx.fillRect(x0 + j*cell, y0 + i*cell, cell, cell);
@@ -235,26 +271,39 @@ function renderConfusion(conf) {
   // grid
   ctx.strokeStyle="#1f2633"; ctx.lineWidth=1;
   for (let k=0;k<=N;k++){
-    ctx.beginPath(); ctx.moveTo(x0, y0+k*cell); ctx.lineTo(x0+N*cell, y0+k*cell); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(x0+k*cell, y0); ctx.lineTo(x0+k*cell, y0+N*cell); ctx.stroke();
-  }
-  // labels
-  ctx.fillStyle="#e7eaf0"; ctx.font="12px system-ui"; ctx.textAlign="center";
-  for (let d=0; d<N; d++){
-    ctx.fillText(String(d), x0 + d*cell + cell/2, y0 - 8);
-    ctx.fillText(String(d), x0 - 12, y0 + d*cell + cell/2 + 4);
+    ctx.beginPath(); ctx.moveTo(x0, y0+k*cell); ctx.lineTo(x0+gridSize, y0+k*cell); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0+k*cell, y0); ctx.lineTo(x0+k*cell, y0+gridSize); ctx.stroke();
   }
 
-  // hover readouts
+  // tick labels
+  ctx.fillStyle="#e7eaf0"; ctx.font="12px system-ui"; ctx.textAlign="center";
+  for (let d=0; d<N; d++){
+    ctx.fillText(String(d), x0 + d*cell + cell/2, y0 - 8);                      // top (pred)
+    ctx.fillText(String(d), x0 - 14, y0 + d*cell + cell/2 + 4);                 // left (true)
+  }
+
+  // axis titles
+  ctx.save();
+  ctx.font="13px system-ui"; ctx.fillStyle="#e7eaf0";
+  // Top title (Predicted)
+  ctx.textAlign="center";
+  ctx.fillText("Predicted", x0 + gridSize/2, y0 - 28);
+  // Left title (True)
+  ctx.translate(x0 - 42, y0 + gridSize/2);
+  ctx.rotate(-Math.PI/2); ctx.textAlign="center";
+  ctx.fillText("True", 0, 0);
+  ctx.restore();
+
+  // legend (right side)
+  drawLegend(ctx, x0 + gridSize + 18, y0, 12, gridSize, "0%", "100%");
+  // hover readout
   const hover = q("#confHover");
   canvas.onmousemove = e => {
     const r = canvas.getBoundingClientRect();
-    const x = e.clientX - r.left - x0;
-    const y = e.clientY - r.top  - y0;
-    const j = Math.floor(x / cell), i = Math.floor(y / cell);
-    if (i>=0 && i<N && j>=0 && j<N) {
-      hover.textContent = `true=${i} → pred=${j}  |  count=${conf[i][j]}`;
-    } else hover.textContent = "";
+    const j = Math.floor((e.clientX - r.left - x0) / cell);
+    const i = Math.floor((e.clientY - r.top  - y0) / cell);
+    if (i>=0 && i<N && j>=0 && j<N) hover.textContent = `true=${i} → pred=${j}  |  count=${conf[i][j]}`;
+    else hover.textContent = "";
   };
 }
 
@@ -271,18 +320,12 @@ function roundRect(ctx, x, y, w, h, r, fill) {
 
 function clearCanvas(ctx, canvas){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  // nice subtle bg
-  ctx.fillStyle = "#0b0f1a";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = "#0b0f1a"; ctx.fillRect(0,0,canvas.width,canvas.height);
 }
 
-function map(a,b,v, y0,y1){ // map v in [a,b] to [y0,y1]
-  if (b === a) return y0;
-  const t = (v - a) / (b - a);
-  return y0 + (y1 - y0) * t;
-}
+function map(a,b,v, y0,y1){ if (b===a) return y0; const t=(v-a)/(b-a); return y0 + (y1-y0)*t; }
 
-function colorScale(p){ // 0..1 → dark navy → bright cyan
+function colorScale(p){
   const t = Math.max(0, Math.min(1, p));
   const r = Math.round(20 + 60 * t);
   const g = Math.round(40 + 180 * t);
@@ -292,4 +335,18 @@ function colorScale(p){ // 0..1 → dark navy → bright cyan
 
 function parseConfusionCSV(text){
   return text.trim().split(/\r?\n/).map(line => line.split(",").map(v=>Number(v)));
+}
+
+function drawLegend(ctx, x, y, w, h, loLabel, hiLabel){
+  // vertical gradient legend from low (top) to high (bottom)
+  for (let i=0;i<h;i++){
+    const t = i / Math.max(1,h-1);
+    const c = colorScale(1 - t);
+    ctx.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`;
+    ctx.fillRect(x, y + i, w, 1);
+  }
+  ctx.strokeStyle="#1f2633"; ctx.strokeRect(x, y, w, h);
+  ctx.fillStyle="#e7eaf0"; ctx.font="12px system-ui"; ctx.textAlign="left";
+  ctx.fillText(hiLabel, x + w + 6, y + 10);
+  ctx.fillText(loLabel, x + w + 6, y + h - 2);
 }
