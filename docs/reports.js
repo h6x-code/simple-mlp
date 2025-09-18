@@ -233,7 +233,7 @@ function renderPerClass(perClassAcc) {
   const W = rect.width, H = rect.height;
 
   const padL = 80, padR = 24, padT = 34, padB = 56;
-  const ymin = 0.75, ymax = 1.0;
+  const ymin = 0.0, ymax = 1.0;
 
   clearCanvas(ctx, canvas);
 
@@ -243,7 +243,7 @@ function renderPerClass(perClassAcc) {
 
   // Y ticks (every 5%)
   ctx.textAlign = "right";
-  for (let t = ymin; t <= ymax + 1e-6; t += 0.05) {
+  for (let t = ymin; t <= ymax + 1e-6; t += 0.2) {
     const y = map(ymin, ymax, t, H - padB, padT);
     ctx.globalAlpha = .2; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
     ctx.globalAlpha = 1;  ctx.fillText((t * 100).toFixed(0) + "%", padL - 8, y + 4);
