@@ -2,22 +2,22 @@
 """
 Evaluate all JSON models in docs/models/ on MNIST test set and emit docs/reports/.
 
-Outputs per-model:
-  - docs/reports/<basename>.json             # detailed metrics
-  - docs/reports/confusion_<basename>.csv    # 10x10 confusion matrix
+Per-model outputs:
+  - docs/reports/<stem>.json              # detailed metrics
+  - docs/reports/confusion_<stem>.csv     # 10x10 confusion matrix
 
-And global:
-  - docs/reports/summary.csv                 # one row per model
-  - docs/reports/manifest.json               # list of model report files (for the page)
+Global outputs:
+  - docs/reports/summary.csv              # one row per model (4-decimal floats)
+  - docs/reports/manifest.json            # [{label, report, confusion}] for the reports page:
+        e.g. {"label":"mlp_p3.1 (H=512, 40ep)","report":"mlp_p3.1.json","confusion":"confusion_mlp_p3.1.csv"}
 
 Run:
   python src/eval_models.py
-  # options
-  python src/eval_models.py --no-center --batch 1024
+  python src/eval_models.py --no-center --batch 1024 --limit 5000
 """
 
 from __future__ import annotations
-import argparse, json, math
+import argparse, json, math, re
 from pathlib import Path
 from datetime import datetime
 
@@ -27,6 +27,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from tqdm import tqdm
 
+# ---------- helpers ----------
 
 def coerce_numbers(lst):
     out = []
@@ -37,7 +38,6 @@ def coerce_numbers(lst):
         except Exception:
             out.append(0.0)
     return out
-
 
 def load_model_json(fp: Path):
     js = json.loads(fp.read_text())
@@ -63,7 +63,6 @@ def load_model_json(fp: Path):
     else: mu = mu[:F]
 
     return {"meta": meta, "F": F, "H": H, "C": C, "W1": W1, "b1": b1, "W2": W2, "b2": b2, "mu": mu}
-
 
 @torch.no_grad()
 def evaluate_model(params, dataloader, device, center: bool):
@@ -138,6 +137,45 @@ def evaluate_model(params, dataloader, device, center: bool):
         "supports": supports,
     }
 
+# ---------- label helpers for manifest ----------
+
+_epoch_re = re.compile(r"(\d+)\s*(?:ep|epoch|epochs)", re.I)
+
+def load_models_manifest_labels(models_manifest_path: Path) -> dict[str, str]:
+    """
+    Read docs/models/manifest.json (if present) and return a mapping:
+      filename -> label ( whatever the training script wrote ).
+    """
+    mapping = {}
+    if models_manifest_path.exists():
+        try:
+            data = json.loads(models_manifest_path.read_text())
+            if isinstance(data, list):
+                for item in data:
+                    fn = item.get("file") or item.get("report") or ""
+                    lbl = item.get("label") or ""
+                    if fn: mapping[fn] = lbl
+        except Exception:
+            pass
+    return mapping
+
+def extract_epochs_from_label(label: str) -> int | None:
+    """
+    Try to pull 'NN ep' or 'NN epochs' out of a free-form label string.
+    """
+    m = _epoch_re.search(label or "")
+    return int(m.group(1)) if m else None
+
+def build_display_label(stem: str, hidden: int, epochs: int | None) -> str:
+    """
+    Final label format requested:
+      e.g. "mlp_p3.1 (H=512, 40ep)"  or if epochs unknown → "mlp_p3.1 (H=512)"
+    """
+    if epochs is not None:
+        return f"{stem} (H={hidden}, {epochs}ep)"
+    return f"{stem} (H={hidden})"
+
+# ---------- main ----------
 
 def main():
     ap = argparse.ArgumentParser()
@@ -163,6 +201,9 @@ def main():
     if not json_paths:
         print("No model JSONs found in docs/models/.")
         return
+
+    # read training-side manifest to steal epochs from labels if possible
+    train_manifest_labels = load_models_manifest_labels(models_dir / "manifest.json")
 
     summary_rows = []
     manifest = []
@@ -195,35 +236,47 @@ def main():
         out_json.write_text(json.dumps(payload, indent=2))
         print(f"  wrote {out_json}")
 
-        # confusion matrix CSV for the page
+        # confusion matrix CSV
         conf_csv = out_dir / f"confusion_{stem}.csv"
         np.savetxt(conf_csv, np.array(metrics["confusion_matrix"], dtype=int), fmt="%d", delimiter=",")
         print(f"  wrote {conf_csv}")
 
+        # summary row (4 decimals)
+        def f4(x): return f"{x:.4f}"
         summary_rows.append((
-            fp.name, params["H"], int(args.center),
-            metrics["accuracy"], metrics["top3_accuracy"], metrics["macro_f1"], metrics["weighted_f1"], metrics["nll"]
+            fp.name,
+            str(params["H"]),
+            str(int(args.center)),
+            f4(metrics["accuracy"]),
+            f4(metrics["top3_accuracy"]),
+            f4(metrics["macro_f1"]),
+            f4(metrics["weighted_f1"]),
+            f4(metrics["nll"]),
         ))
+
+        # manifest entry (label = "<stem> (H=H, Xep)" if we can detect epochs)
+        epochs = extract_epochs_from_label(train_manifest_labels.get(fp.name, ""))
+        label = build_display_label(stem, params["H"], epochs)
         manifest.append({
-            "label": f"{fp.name.split('.')[0]} (H={params['H']}, center={int(args.center)})",
+            "label": label,
             "report": f"{stem}.json",
             "confusion": f"confusion_{stem}.csv"
         })
 
-    # summary CSV
+    # summary.csv with header + rows (already formatted)
     if summary_rows:
         sum_path = out_dir / "summary.csv"
         with open(sum_path, "w") as f:
             f.write("file,hidden,center,accuracy,top3_accuracy,macro_f1,weighted_f1,nll\n")
             for r in summary_rows:
-                f.write(f"{r[0]},{r[1]},{r[2]},{r[3]:.4f},{r[4]:.4f},{r[5]:.4f},{r[6]:.4f},{r[7]:.4f}\n")
+                f.write(",".join(r) + "\n")
         print(f"\nSummary → {sum_path}")
 
+        # manifest.json for reports page (desired shape)
         (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2))
         print(f"Manifest → {out_dir / 'manifest.json'}")
     else:
         print("No models evaluated; summary not written.")
-
 
 if __name__ == "__main__":
     main()
