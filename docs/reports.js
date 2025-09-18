@@ -118,11 +118,16 @@ function renderSummaryChart(rows) {
   const ctx = canvas.getContext("2d");
   clearCanvas(ctx, canvas);
 
-  const padL = 80, padR = 20, padT = 16, padB = 28;
+  // ── Bigger paddings so labels/bars breathe ─────────────────────
+  const padL = 100;   // y-axis labels
+  const padR = 40;    // space at right end
+  const padT = 28;    // value labels above bars
+  const padB = 80;    // angled file labels under axis
+
   const W = canvas.width, H = canvas.height;
   const n = values.length;
-
   const ymin = 0.75, ymax = 1.0;
+
   // axes
   ctx.strokeStyle = "#394253";
   ctx.fillStyle = "#e7eaf0";
@@ -133,30 +138,43 @@ function renderSummaryChart(rows) {
   ctx.lineTo(W - padR, H - padB);
   ctx.stroke();
 
-  // grid + labels
-  for (let t = ymin; t <= ymax; t += 0.02) {
+  // grid + Y labels (every 2%)
+  for (let t = ymin; t <= ymax + 1e-6; t += 0.02) {
     const y = map(ymin, ymax, t, H - padB, padT);
     ctx.globalAlpha = 0.2;
-    ctx.beginPath();
-    ctx.moveTo(padL, y); ctx.lineTo(W - padR, y);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
     ctx.globalAlpha = 1;
-    ctx.fillText((t*100).toFixed(0)+"%", 10, y+4);
+    ctx.textAlign = "right";
+    ctx.fillText((t*100).toFixed(0) + "%", padL - 8, y + 4);
   }
 
   // bars
-  const barW = (W - padL - padR) / Math.max(1, n);
+  const gap = 8;                                 // gap between bars
+  const barW = Math.max(28, (W - padL - padR - gap*(n-1)) / Math.max(1, n));
   for (let i = 0; i < n; i++) {
-    const x = padL + i * barW + 6;
-    const y = map(ymin, ymax, values[i], H - padB, padT);
-    const h = H - padB - y;
+    const v = values[i];
+    const x = padL + i * (barW + gap);
+    const y = map(ymin, ymax, v, H - padB, padT);
+    const h = Math.max(1, H - padB - y);
+
+    // bar
     ctx.fillStyle = "#4f8cff";
-    roundRect(ctx, x, y, barW - 12, h, 6, true);
+    roundRect(ctx, x, y, barW, h, 8, true);
+
+    // value label (keep inside top padding)
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "12px system-ui";
+    ctx.textAlign = "center";
+    const yVal = Math.max(padT + 12, y - 6);
+    ctx.fillText((v*100).toFixed(1) + "%", x + barW/2, yVal);
+
+    // file label (angled; uses extra bottom pad)
     ctx.fillStyle = "#e7eaf0";
     ctx.save();
-    ctx.translate(x + (barW-12)/2, H - padB + 14);
-    ctx.rotate(-Math.PI/6);
-    ctx.textAlign = "right"; ctx.fillText(labels[i], 0, 0);
+    ctx.translate(x + barW/2, H - padB + 44);   // push further down
+    ctx.rotate(-Math.PI / 5);                   // ~-36°
+    ctx.textAlign = "right";
+    ctx.fillText(labels[i], 0, 0);
     ctx.restore();
   }
 }

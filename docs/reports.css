@@ -8,6 +8,7 @@
 .table td:first-child, .table th:first-child { text-align: left; }
 
 .summary-row, .canvas-row { display: flex; gap: 18px; flex-wrap: wrap; }
-.canvas-col { background: transparent; }
+.canvas-col { background: transparent; padding: 12px; }
 
 .model-picker { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+
