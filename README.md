@@ -15,6 +15,18 @@ Select from a variety of models:
 | p2.1      | 256                | 40     | 91.20%        |
 | p3        | 512                | 10     | 90.08%        |
 | p3.1      | 512                | 40     | 94.02%        |
+| p4        | 128                | 10     | 97.64%        |
+| p5        | 256                | 10     | 98.16%        |
+| p5.1      | 256                | 40     | 98.83%        |
+| p6        | 512                | 10     | 98.45%        |
+| p6.1      | 512                | 40     | 98.94%        |
+
+### Model p4-6.1 Accuracy Improvements
+- Add data augmentation (RandomAffine) to improve generalization
+- Center inputs on μ during training for better convergence
+- Switch to AdamW optimizer with weight decay
+- Add cosine annealing LR scheduler
+- Enable label smoothing in cross-entropy loss
 
 ## Setup
 From the project root:
