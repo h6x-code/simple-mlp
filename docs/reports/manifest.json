@@ -10,12 +10,22 @@
     "confusion": "confusion_mlp_p1.csv"
   },
   {
+    "label": "mlp_p2.1.json (H=256, center=1)",
+    "report": "mlp_p2.1.json",
+    "confusion": "confusion_mlp_p2.1.csv"
+  },
+  {
     "label": "mlp_p2.json (H=256, center=1)",
     "report": "mlp_p2.json",
     "confusion": "confusion_mlp_p2.csv"
   },
   {
-    "label": "mlp_p3.json (H=256, center=1)",
+    "label": "mlp_p3.1.json (H=512, center=1)",
+    "report": "mlp_p3.1.json",
+    "confusion": "confusion_mlp_p3.1.csv"
+  },
+  {
+    "label": "mlp_p3.json (H=512, center=1)",
     "report": "mlp_p3.json",
     "confusion": "confusion_mlp_p3.csv"
   }

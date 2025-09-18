@@ -1,8 +1,8 @@
 {
   "meta": {
-    "timestamp_utc": "2025-09-18T00:24:49Z",
+    "timestamp_utc": "2025-09-18T15:31:28Z",
     "file": "mlp_p2.json",
-    "arch": "mlp_p1",
+    "arch": "mlp_p2",
     "n_features": 784,
     "hidden": 256,
     "n_classes": 10,
