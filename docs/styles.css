@@ -229,3 +229,26 @@ kbd{
   transform: translateY(-2px);
 }
 
+#xaiPanel .xai-controls {
+  display:flex;
+  gap:8px;
+  margin-bottom:10px;
+  flex-wrap:wrap;
+}
+#xaiPanel .xai-row { 
+  display:grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap:14px; 
+}
+#xaiPanel .label { 
+  font-size:12px; 
+  color:#aeb8cc; 
+  margin: 0 0 6px 0; 
+}
+#saliency, #actmap { 
+  width:100%; 
+  height:auto; 
+  background:#0b0f1a; 
+  border:1px solid var(--border); 
+}
+

@@ -68,6 +68,26 @@
     <p class="footnote">Model: <code>models/*.json</code> • Pure HTML/CSS/JS</p>
     </section>
 
+    <!-- Interpretability -->
+    <section class="panel" id="xaiPanel">
+      <h3>Explain prediction</h3>
+      <div class="xai-controls">
+        <button id="btnSaliency">Saliency (∂logit/∂x)</button>
+        <button id="btnActivations">Hidden layer</button>
+      </div>
+      <div class="xai-row">
+        <div>
+          <div class="label">Saliency (28×28)</div>
+          <canvas id="saliency" width="280" height="280"></canvas>
+        </div>
+        <div>
+          <div class="label">Hidden activations (H cells)</div>
+          <canvas id="actmap" width="280" height="280"></canvas>
+        </div>
+      </div>
+    </section>
+
+
     <div class="reports-link">
         <a href="reports.html" class="btn-reports">View Reports</a>
     </div>
