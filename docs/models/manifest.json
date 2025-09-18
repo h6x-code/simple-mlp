@@ -8,10 +8,6 @@
     "file": "mlp_p3.json"
   },
   {
-    "label": "fast (H=64, 5ep) \u2014 mlp_fast.json",
-    "file": "mlp_fast.json"
-  },
-  {
     "label": "p2.1 (H=256, 100ep) \u2014 mlp_p2.1.json",
     "file": "mlp_p2.1.json"
   },
@@ -22,5 +18,9 @@
   {
     "label": "p1 (H=128, 10ep) \u2014 mlp_p1.json",
     "file": "mlp_p1.json"
+  },
+  {
+    "label": "fast (H=64, 5ep) \u2014 mlp_fast.json",
+    "file": "mlp_fast.json"
   }
 ]
