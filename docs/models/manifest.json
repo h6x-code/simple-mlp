@@ -1,5 +1,9 @@
 [
   {
+    "label": "MLP (H=64, 5ep) \u2014 mlp_fast.json",
+    "file": "mlp_fast.json"
+  },
+  {
     "label": "MLP (H=256, 100ep) \u2014 mlp_p3.json",
     "file": "mlp_p3.json"
   },
