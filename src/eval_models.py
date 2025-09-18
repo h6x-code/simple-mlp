@@ -255,7 +255,7 @@ def main():
         ))
 
         # manifest entry (label = "<stem> (H=H, Xep)" if we can detect epochs)
-        epochs = extract_epochs_from_label(train_manifest_labels.get(fp.name, ""))
+        epochs = params["meta"].get("epochs")
         label = build_display_label(stem, params["H"], epochs)
         manifest.append({
             "label": label,

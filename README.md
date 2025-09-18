@@ -17,7 +17,7 @@ Select from a variety of models:
 | p3.1      | 512                | 40     | 94.02%        |
 
 ## Setup
-
+From the project root:
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
