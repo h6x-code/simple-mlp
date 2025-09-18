@@ -11,17 +11,13 @@ Select from a variety of models:
 |-----------|--------------------|--------|---------------|
 | fast      | 64                 | 5      | 83.89%        |
 | p1        | 128                | 10     | 88.34%        |
-| p2        | 256                | 10     | 90.44%        |
 | p2.1      | 256                | 40     | 91.20%        |
-| p3        | 512                | 10     | 90.08%        |
 | p3.1      | 512                | 40     | 94.02%        |
 | p4        | 128                | 10     | 97.64%        |
-| p5        | 256                | 10     | 98.16%        |
 | p5.1      | 256                | 40     | 98.83%        |
-| p6        | 512                | 10     | 98.45%        |
-| p6.1      | 512                | 40     | 98.94%        |
+| p6.2      | 512                | 80     | 99.15%        |
 
-### Model p4-6.1 Accuracy Improvements
+### Model p4-6.2 Accuracy Improvements
 - Add data augmentation (RandomAffine) to improve generalization
 - Center inputs on μ during training for better convergence
 - Switch to AdamW optimizer with weight decay

@@ -1,5 +1,9 @@
 [
   {
+    "label": "p6.2 (H=512, 80ep)",
+    "file": "p6.2.json"
+  },
+  {
     "label": "p6.1 (H=512, 40ep)",
     "file": "p6.1.json"
   },

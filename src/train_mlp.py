@@ -32,6 +32,23 @@ class MLP(nn.Module):
         h = F.relu(self.fc1(x))
         return self.fc2(h)
 
+class EMA:
+    def __init__(self, model, decay=0.999):
+        self.decay = decay
+        self.shadow = {k: p.detach().clone()
+                       for k, p in model.state_dict().items()
+                       if p.dtype.is_floating_point}
+    @torch.no_grad()
+    def update(self, model):
+        for k, p in model.state_dict().items():
+            if k in self.shadow:
+                self.shadow[k].mul_(self.decay).add_(p, alpha=1 - self.decay)
+    @torch.no_grad()
+    def copy_to(self, model):
+        sd = model.state_dict()
+        for k, v in self.shadow.items():
+            sd[k].copy_(v)
+
 @torch.no_grad()
 def evaluate(model, loader, device, mu=None, center=False):
     model.eval(); n=0; c=0
@@ -115,7 +132,7 @@ def main():
     set_seeds(a.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     tfm_train = transforms.Compose([
-        transforms.RandomAffine(degrees=10, translate=(0.1, 0.1), scale=(0.95, 1.05), fill=0),
+        transforms.RandomAffine(degrees=8, translate=(0.08, 0.08), scale=(0.98, 1.02), fill=0),
         transforms.ToTensor(),
     ])
     tfm_test  = transforms.ToTensor()
@@ -135,14 +152,37 @@ def main():
     m = MLP(a.hidden).to(device)
 
     # Use AdamW + schedule
-    opt = torch.optim.Adam(m.parameters(), lr=a.lr, weight_decay=1e-4)
-    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=a.epochs)
+    opt = torch.optim.Adam(m.parameters(), lr=a.lr, weight_decay=5e-5)
+
+    # 1 epoch warmup to 1e-3, then cosine to 1e-5
+    warmup_epochs = 1
+    eta_min = 1e-5
+    base = a.lr
+
+    def lr_lambda(ep):
+        # linear warmup for the first `warmup_epochs` steps
+        if ep < warmup_epochs:
+            return (ep + 1) / max(1, warmup_epochs)
+
+        # cosine decay from 1.0 → (eta_min/base) over remaining epochs
+        denom = max(1, (a.epochs - warmup_epochs))
+        t = (ep - warmup_epochs) / denom              # 0 → 1 across the schedule
+        cos = 0.5 * (1 + np.cos(np.pi * t))           # 1 → 0
+        return (eta_min / base) + (1 - (eta_min / base)) * cos
+
+    sched = torch.optim.lr_scheduler.LambdaLR(opt, lr_lambda=lr_lambda)
 
     # Label smoothing CE
-    crit = nn.CrossEntropyLoss(label_smoothing=0.1)
+    crit = nn.CrossEntropyLoss(label_smoothing=0.0)
+
+    ema = EMA(m, decay=0.999)
 
     # Train on centered inputs
     for e in range(1, a.epochs+1):
+        if e == a.epochs - 10:
+            # swap to no-aug dataset for the home stretch
+            tr.transform = transforms.ToTensor()
+
         m.train()
         for x, y in tqdm(trL,
                         desc=f"Epoch {e}/{a.epochs}",
@@ -153,10 +193,14 @@ def main():
             y = y.to(device)
             loss = crit(m(x, mu=None, center=False), y)
             opt.zero_grad(set_to_none=True); loss.backward(); opt.step()
+            ema.update(m)
 
         sched.step()
+
         acc = evaluate(m, teL, device, mu=mu, center=True)
         print(f"Epoch {e}: test acc {acc*100:.2f}% lr={sched.get_last_lr()[0]:.5f}")
+
+    ema.copy_to(m)  # swap EMA weights into the model before export
 
     out_path = Path("docs/models") / a.out_name
     export_json(m, mu, out_path, a.hidden, a.epochs, a.architecture)
