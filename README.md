@@ -1,10 +1,13 @@
-# Simple MLP Demo
+# Simple MLP
 
-https://h6x-code.github.io/simple-mlp/
+Train a tiny MNIST MLP in PyTorch and run it live in the browser with vanilla HTML/CSS/JS.
 
-Minimal end-to-end project: train a simple **multi-layer perceptron** on MNIST in Python, then run it live in the browser via GitHub Pages.
+**Demo:** https://h6x-code.github.io/simple-mlp/ · **Reports:** https://h6x-code.github.io/simple-mlp/reports.html
 
-Frontend is pure HTML/CSS/JS (no frameworks).
+The repo stays small and educational:
+**Train**: `src/train_mlp.py` exports a lightweight JSON (`docs/models/*.json`).
+**Demo**: `docs/index.html` draws 280×280 → 28×28, runs the MLP in JS, and shows scores.
+**Reports**: `docs/reports.html` charts accuracy, per-class metrics, and the confusion matrix.
 
 Select from a variety of models:
 | MLP Model | Num Hidden Neurons | Epochs | Test Accuracy |
@@ -17,12 +20,15 @@ Select from a variety of models:
 | p5.1      | 256                | 40     | 98.83%        |
 | p6.2      | 512                | 80     | 99.15%        |
 
-### Model p4-6.2 Accuracy Improvements
+### Model p4+ Accuracy Improvements
 - Add data augmentation (RandomAffine) to improve generalization
 - Center inputs on μ during training for better convergence
 - Switch to AdamW optimizer with weight decay
 - Add cosine annealing LR scheduler
 - Enable label smoothing in cross-entropy loss
+
+### What's new in p6.2
+Trained with AdamW + cosine decay (1e-3 → 1e-5), 1-epoch warmup, gentle RandomAffine, μ-centering, last 10 epochs with no augmentation, and EMA=0.999 for export. This combo produced the largest accuracy gains without changing the browser JSON schema.
 
 ## Setup
 From the project root:
