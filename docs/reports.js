@@ -108,8 +108,7 @@ function renderSummaryChart(rows) {
   const idxFile = header.indexOf("file");
   const idxAcc  = header.indexOf("accuracy");
 
-  const labels = [];
-  const values = [];
+  const labels = [], values = [];
   for (let i = 1; i < rows.length; i++) {
     labels.push(rows[i][idxFile].replace(/\.json$/,""));
     values.push(Number(rows[i][idxAcc]));
@@ -122,34 +121,44 @@ function renderSummaryChart(rows) {
   const padL = 80, padR = 20, padT = 16, padB = 28;
   const W = canvas.width, H = canvas.height;
   const n = values.length;
-  const max = Math.max(0.001, ...values);
-  const barW = (W - padL - padR) / Math.max(1, n);
+
+  const ymin = 0.75, ymax = 1.0;   // <—— zoom range
+
+  // axes
   ctx.strokeStyle = "#394253";
   ctx.fillStyle = "#e7eaf0";
   ctx.font = "12px system-ui";
-
-  // axes
   ctx.beginPath();
-  ctx.moveTo(padL, padT); ctx.lineTo(padL, H - padB); ctx.lineTo(W - padR, H - padB);
+  ctx.moveTo(padL, padT);
+  ctx.lineTo(padL, H - padB);
+  ctx.lineTo(W - padR, H - padB);
   ctx.stroke();
 
   // grid + labels
-  for (let t = 0.9; t <= 1.0; t += 0.02) {
-    const y = map(0,1,t, H - padB, padT);
-    ctx.globalAlpha = 0.2; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-    ctx.globalAlpha = 1; ctx.fillText((t*100).toFixed(0)+"%", 10, y+4);
+  for (let t = ymin; t <= ymax; t += 0.02) {
+    const y = map(ymin, ymax, t, H - padB, padT);
+    ctx.globalAlpha = 0.2;
+    ctx.beginPath();
+    ctx.moveTo(padL, y); ctx.lineTo(W - padR, y);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.fillText((t*100).toFixed(0)+"%", 10, y+4);
   }
 
   // bars
+  const barW = (W - padL - padR) / Math.max(1, n);
   for (let i = 0; i < n; i++) {
     const x = padL + i * barW + 6;
-    const y = map(0, max, values[i], H - padB, padT);
+    const y = map(ymin, ymax, values[i], H - padB, padT);
     const h = H - padB - y;
     ctx.fillStyle = "#4f8cff";
     roundRect(ctx, x, y, barW - 12, h, 6, true);
     ctx.fillStyle = "#e7eaf0";
-    ctx.save(); ctx.translate(x + (barW-12)/2, H - padB + 14); ctx.rotate(-Math.PI/6);
-    ctx.textAlign = "right"; ctx.fillText(labels[i], 0, 0); ctx.restore();
+    ctx.save();
+    ctx.translate(x + (barW-12)/2, H - padB + 14);
+    ctx.rotate(-Math.PI/6);
+    ctx.textAlign = "right"; ctx.fillText(labels[i], 0, 0);
+    ctx.restore();
   }
 }
 
