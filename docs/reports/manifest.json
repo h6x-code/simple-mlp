@@ -1,0 +1,37 @@
+[
+  {
+    "label": "fast (H=64, 5ep)",
+    "report": "fast.json",
+    "confusion": "confusion_fast.csv"
+  },
+  {
+    "label": "p1 (H=128, 10ep)",
+    "report": "p1.json",
+    "confusion": "confusion_p1.csv"
+  },
+  {
+    "label": "p2.1 (H=256, 40ep)",
+    "report": "p2.1.json",
+    "confusion": "confusion_p2.1.csv"
+  },
+  {
+    "label": "p3.1 (H=512, 40ep)",
+    "report": "p3.1.json",
+    "confusion": "confusion_p3.1.csv"
+  },
+  {
+    "label": "p4 (H=128, 10ep)",
+    "report": "p4.json",
+    "confusion": "confusion_p4.csv"
+  },
+  {
+    "label": "p5.1 (H=256, 40ep)",
+    "report": "p5.1.json",
+    "confusion": "confusion_p5.1.csv"
+  },
+  {
+    "label": "p6.2 (H=512, 80ep)",
+    "report": "p6.2.json",
+    "confusion": "confusion_p6.2.csv"
+  }
+]
