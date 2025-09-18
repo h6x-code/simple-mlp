@@ -2,12 +2,22 @@
 
 const q = s => document.querySelector(s);
 let manifest = [];
+let lastSummaryRows = null;
+let lastPerClass = null;
+let lastConf = null;
 
 window.addEventListener("DOMContentLoaded", async () => {
   await loadSummary();
   await loadManifest();
   populateModelDropdown();
   q("#loadBtn").addEventListener("click", loadSelectedModel);
+
+  // Re-render responsively
+  window.addEventListener("resize", () => {
+    if (lastSummaryRows) renderSummaryChart(lastSummaryRows);
+    if (lastPerClass)    renderPerClass(lastPerClass);
+    if (lastConf)        renderConfusion(lastConf);
+  });
 });
 
 async function loadSummary() {
@@ -17,6 +27,8 @@ async function loadSummary() {
     if (!res.ok) throw new Error("no summary.csv");
     const text = await res.text();
     const rows = parseCSV(text);
+    lastSummaryRows = rows;
+    renderSummaryChart(rows);
     renderSummaryTable(rows);
     renderSummaryChart(rows);
     status.textContent = "Loaded " + (rows.length - 1) + " models.";
@@ -64,6 +76,11 @@ async function loadSelectedModel() {
     const confCSV = await (await fetch("reports/" + confFile + "?v=" + Date.now(), { cache: "no-store" })).text();
     const conf = parseConfusionCSV(confCSV);
 
+    lastPerClass = rep.metrics.per_class_accuracy;
+    lastConf = conf;
+    renderPerClass(lastPerClass);
+    renderConfusion(lastConf);
+
     renderPerClass(rep.metrics.per_class_accuracy);
     renderConfusion(conf);
     q("#modelMeta").textContent =
@@ -71,6 +88,22 @@ async function loadSelectedModel() {
   } catch (e) {
     q("#modelMeta").textContent = "Failed to load report.";
   }
+}
+
+/* ---------- Render helper ---------- */
+// Resize a canvas to its CSS box with HiDPI scaling.
+// If 'ar' is provided, we respect the CSS aspect-ratio; otherwise use element's current box.
+function autosizeCanvas(canvas) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  const cssW = Math.max(300, rect.width);
+  const cssH = Math.max(200, rect.height);
+  // Set CSS size via stylesheet; set device pixels here:
+  canvas.width  = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // draw in CSS pixels
+  return ctx;
 }
 
 /* ---------- Summary table ---------- */
