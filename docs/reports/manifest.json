@@ -1,0 +1,22 @@
+[
+  {
+    "label": "mlp_fast.json (H=64, center=1)",
+    "report": "mlp_fast.json",
+    "confusion": "confusion_mlp_fast.csv"
+  },
+  {
+    "label": "mlp_p1.json (H=128, center=1)",
+    "report": "mlp_p1.json",
+    "confusion": "confusion_mlp_p1.csv"
+  },
+  {
+    "label": "mlp_p2.json (H=256, center=1)",
+    "report": "mlp_p2.json",
+    "confusion": "confusion_mlp_p2.csv"
+  },
+  {
+    "label": "mlp_p3.json (H=256, center=1)",
+    "report": "mlp_p3.json",
+    "confusion": "confusion_mlp_p3.csv"
+  }
+]

@@ -7,6 +7,7 @@ Minimal end-to-end project: train a simple **multi-layer perceptron** on MNIST i
 Frontend is pure HTML/CSS/JS (no frameworks).
 
 Select from a variety of models:
+- fast: 64 hidden neurons, 5 epochs, 83.89% accuracy
 - p1: 128 hidden neurons, 10 epochs, 88.34% accuracy
 - p2: 256 hidden neurons, 10 epochs, 90.44% accuracy
 - p3: 256 hidden neurons, 100 epochs, 93.04% accuracy

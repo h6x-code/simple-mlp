@@ -1,0 +1,13 @@
+.section-title { margin: 0 0 10px 0; }
+.rep-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding-bottom: 40px; }
+
+.table-wrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th, .table td { border: 1px solid var(--border); padding: 6px 8px; text-align: right; }
+.table th { background: #1c2130; text-align: left; }
+.table td:first-child, .table th:first-child { text-align: left; }
+
+.summary-row, .canvas-row { display: flex; gap: 18px; flex-wrap: wrap; }
+.canvas-col { background: transparent; }
+
+.model-picker { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }

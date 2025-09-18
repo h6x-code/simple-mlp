@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MNIST MLP — Reports</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="reports.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>MNIST MLP — Reports</h1>
+      <p class="subtitle">Static charts from evaluation artifacts in <code>docs/reports/</code>.</p>
+      <p class="subtitle"><a href="./index.html">← Back to the demo</a></p>
+    </div>
+  </header>
+
+  <main class="wrap rep-grid">
+    <!-- Summary panel -->
+    <section class="panel">
+      <h2 class="section-title">Summary</h2>
+      <div id="summaryStatus" class="status">Loading…</div>
+      <div class="summary-row">
+        <div class="canvas-col">
+          <canvas id="chartSummary" width="900" height="320" aria-label="summary chart"></canvas>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="summaryTable" class="table"></table>
+      </div>
+    </section>
+
+    <!-- Per-model panel -->
+    <section class="panel">
+      <h2 class="section-title">Per-Model Details</h2>
+
+      <div class="model-picker">
+        <label class="control chip">
+          <span>Model</span>
+          <select id="modelSel"></select>
+        </label>
+        <button id="loadBtn" class="btn">Load</button>
+        <span id="modelMeta" class="status"></span>
+      </div>
+
+      <div class="canvas-row">
+        <div class="canvas-col">
+          <h3>Per-class Accuracy</h3>
+          <canvas id="chartPerClass" width="520" height="300"></canvas>
+        </div>
+        <div class="canvas-col">
+          <h3>Confusion Matrix</h3>
+          <canvas id="chartConf" width="300" height="300"></canvas>
+          <div id="confHover" class="status"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="reports.js?v=1" defer></script>
+</body>
+</html>
