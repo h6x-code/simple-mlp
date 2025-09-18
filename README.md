@@ -96,3 +96,16 @@ Python (comes with training environment):
 cd docs
 python -m http.server 8000
 ```
+
+## Demo notes
+- Center if μ available is the default in the browser (mirrors training).
+- If a hard refresh doesn’t reflect changes, the site uses cache-busting (`?v=`) on assets and fetches.
+- You can bump the version query in `docs/reports.html` and `app.js` when changing JS/CSS/models.
+
+## Reproducibility
+- Seed: `1337` (set in `train_mlp.py`).
+- Python: 3.10+ recommended.
+- Packages (CPU-friendly): see `requirements.txt` (torch, torchvision, numpy, tqdm).
+- μ (mean image) is computed on **non-augmented** train data and saved inside each model JSON.
+- The frontend does inference in FP32 and optionally subtracts μ (checkbox) for parity with training.
+
