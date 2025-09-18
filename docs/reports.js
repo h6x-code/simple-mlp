@@ -122,8 +122,7 @@ function renderSummaryChart(rows) {
   const W = canvas.width, H = canvas.height;
   const n = values.length;
 
-  const ymin = 0.75, ymax = 1.0;   // <—— zoom range
-
+  const ymin = 0.75, ymax = 1.0;
   // axes
   ctx.strokeStyle = "#394253";
   ctx.fillStyle = "#e7eaf0";
